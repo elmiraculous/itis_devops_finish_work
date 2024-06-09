@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  web:
+    build: 
+      context: .
+    ports:
+      - "8888:8888"
+    environment:
+      - LOGGING_URL=http://loki:3100/loki/api/v1/push
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - loki
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana-provisioning:/etc/grafana/provisioning
