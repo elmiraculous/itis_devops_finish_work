@@ -26,13 +26,23 @@ services:
     volumes:
       - ./etc/loki/local-config.yaml:/etc/loki/local-config.yaml
 
-    environment:
-      - LOKI_SCHEMA_CONFIG_CONFIGS_0_FROM=2020-10-24
-      - LOKI_SCHEMA_CONFIG_CONFIGS_0_STORE=boltdb-shipper
-      - LOKI_SCHEMA_CONFIG_CONFIGS_0_OBJECT_STORE=filesystem
-      - LOKI_SCHEMA_CONFIG_CONFIGS_0_SCHEMA=v11
-      - LOKI_SCHEMA_CONFIG_CONFIGS_0_INDEX_PREFIX=index_
-      - LOKI_SCHEMA_CONFIG_CONFIGS_0_INDEX_PERIOD=24h
+  promtail:
+    image: grafana/promtail:latest
+    networks:
+      - app_net
+    volumes:
+      - /var/log:/var/log
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    networks:
+      - app_net
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
   grafana:
     image: grafana/grafana:8.0.6
